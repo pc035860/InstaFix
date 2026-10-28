@@ -47,9 +47,9 @@ func Embed(v *model.ViewsData, wr io.Writer) {
 		WriteEscString(v.Title, buffer)
 		buffer.WriteString(embed__3)
 	}
-	if v.ImageURL != "" {
+	for _, imageURL := range v.Images() {
 		buffer.WriteString(embed__11)
-		WriteEscString(v.ImageURL, buffer)
+		WriteEscString(imageURL, buffer)
 		buffer.WriteString(embed__3)
 	}
 	if v.VideoURL != "" {
@@ -62,7 +62,7 @@ func Embed(v *model.ViewsData, wr io.Writer) {
 		buffer.WriteString(embed__16)
 
 	}
-	if v.VideoURL != "" || v.ImageURL != "" {
+	if v.VideoURL != "" || len(v.Images()) > 0 {
 		buffer.WriteString(embed__17)
 	}
 	buffer.WriteString(embed__1)
@@ -70,9 +70,9 @@ func Embed(v *model.ViewsData, wr io.Writer) {
 	buffer.WriteString(embed__2)
 	WriteEscString(v.Description, buffer)
 	buffer.WriteString(embed__3)
-	if v.ImageURL != "" {
+	for _, imageURL := range v.Images() {
 		buffer.WriteString(embed__18)
-		WriteEscString(v.ImageURL, buffer)
+		WriteEscString(imageURL, buffer)
 		buffer.WriteString(embed__3)
 	}
 	if v.VideoURL != "" {

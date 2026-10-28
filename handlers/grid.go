@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -139,7 +140,16 @@ func GenerateGrid(images []image.Image) (image.Image, error) {
 
 func Grid(w http.ResponseWriter, r *http.Request) {
 	postID := chi.URLParam(r, "postID")
-	gridFname := filepath.Join("static", postID+".jpeg")
+	page := 1
+	if pageParam := chi.URLParam(r, "page"); pageParam != "" {
+		parsed, err := strconv.Atoi(pageParam)
+		if err != nil || parsed < 1 {
+			http.Error(w, "Invalid page parameter", http.StatusBadRequest)
+			return
+		}
+		page = parsed
+	}
+	gridFname := filepath.Join("static", postID+"_"+strconv.Itoa(page)+".jpeg")
 
 	// If already exists, return from cache
 	if _, ok := scraper.LRU.Get(gridFname); ok {
@@ -172,6 +182,21 @@ func Grid(w http.ResponseWriter, r *http.Request) {
 
 	if len(item.Medias) == 1 || len(mediaURLs) == 1 {
 		http.Redirect(w, r, "/images/"+postID+"/1", http.StatusFound)
+		return
+	}
+
+	// Keep only the images of the requested group.
+	chunk := gridChunkSize(len(item.Medias))
+	start := (page - 1) * chunk
+	if start >= len(mediaURLs) {
+		http.Error(w, "Page out of range", http.StatusNotFound)
+		return
+	}
+	end := min(start+chunk, len(mediaURLs))
+	mediaURLs = mediaURLs[start:end]
+
+	if len(mediaURLs) == 1 {
+		http.Redirect(w, r, "/images/"+postID+"/"+strconv.Itoa(start+1), http.StatusFound)
 		return
 	}
 

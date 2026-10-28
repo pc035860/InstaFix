@@ -147,9 +147,9 @@ func Embed(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case mediaNum == 0 && isImage && len(item.Medias) > 1:
 		viewsData.Card = "summary_large_image"
-		sb.WriteString("/grid/")
-		sb.WriteString(postID)
-		viewsData.ImageURL = sb.String()
+		viewsData.ImageURLs = carouselImageURLs(postID, len(item.Medias))
+		viewsData.ImageURL = viewsData.ImageURLs[0]
+		sb.WriteString(viewsData.ImageURL)
 	case isImage:
 		viewsData.Card = "summary_large_image"
 		sb.WriteString("/images/")
