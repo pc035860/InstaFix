@@ -391,8 +391,18 @@ func (i *InstaData) ScrapeData() error {
 		if !mediaURL.Exists() {
 			mediaURL = m.Get("display_url")
 		}
+		typename := m.Get("__typename").String()
+		if typename == "" {
+			// Instagram omits __typename on carousel children, which made every
+			// carousel be classified as a video and served as a broken embed.
+			if m.Get("is_video").Bool() {
+				typename = "GraphVideo"
+			} else {
+				typename = "GraphImage"
+			}
+		}
 		i.Medias = append(i.Medias, Media{
-			TypeName: m.Get("__typename").String(),
+			TypeName: typename,
 			URL:      mediaURL.String(),
 		})
 	}
